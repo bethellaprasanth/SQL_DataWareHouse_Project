@@ -1,0 +1,123 @@
+/*Stored Procedure SCript*/
+
+IF OBJECT_ID('bronze.usp_load_bronze_all', 'P') IS NOT NULL
+    DROP PROCEDURE bronze.usp_load_bronze_all;
+GO
+
+CREATE PROCEDURE bronze.usp_load_bronze_all
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @batch_start DATETIME2 = SYSDATETIME();
+    DECLARE @step_start  DATETIME2;
+    DECLARE @step_end    DATETIME2;
+
+    PRINT '===== BRONZE LOAD STARTED =====';
+    PRINT 'Batch Start Time: ' + CAST(@batch_start AS NVARCHAR);
+
+    BEGIN TRY
+
+        --------------------------------------------------
+        -- CRM: Customers
+        --------------------------------------------------
+        SET @step_start = SYSDATETIME();
+        PRINT 'Loading: bronze.crm_cust_info';
+
+        TRUNCATE TABLE bronze.crm_cust_info;
+        BULK INSERT bronze.crm_cust_info
+        FROM 'C:\DW\cust_info.csv'
+        WITH (FORMAT='CSV', FIRSTROW=2);
+
+        SET @step_end = SYSDATETIME();
+        PRINT 'Completed: bronze.crm_cust_info | Duration (sec): '
+              + CAST(DATEDIFF(SECOND, @step_start, @step_end) AS NVARCHAR);
+
+        --------------------------------------------------
+        -- CRM: Products
+        --------------------------------------------------
+        SET @step_start = SYSDATETIME();
+        PRINT 'Loading: bronze.crm_prd_info';
+
+        TRUNCATE TABLE bronze.crm_prd_info;
+        BULK INSERT bronze.crm_prd_info
+        FROM 'C:\DW\prd_info.csv'
+        WITH (FORMAT='CSV', FIRSTROW=2);
+
+        SET @step_end = SYSDATETIME();
+        PRINT 'Completed: bronze.crm_prd_info | Duration (sec): '
+              + CAST(DATEDIFF(SECOND, @step_start, @step_end) AS NVARCHAR);
+
+        --------------------------------------------------
+        -- CRM: Sales
+        --------------------------------------------------
+        SET @step_start = SYSDATETIME();
+        PRINT 'Loading: bronze.crm_sales_details';
+
+        TRUNCATE TABLE bronze.crm_sales_details;
+        BULK INSERT bronze.crm_sales_details
+        FROM 'C:\DW\sales_details.csv'
+        WITH (FORMAT='CSV', FIRSTROW=2);
+
+        SET @step_end = SYSDATETIME();
+        PRINT 'Completed: bronze.crm_sales_details | Duration (sec): '
+              + CAST(DATEDIFF(SECOND, @step_start, @step_end) AS NVARCHAR);
+
+        --------------------------------------------------
+        -- ERP: Customer
+        --------------------------------------------------
+        SET @step_start = SYSDATETIME();
+        PRINT 'Loading: bronze.erp_cust';
+
+        TRUNCATE TABLE bronze.erp_cust;
+        BULK INSERT bronze.erp_cust
+        FROM 'C:\DW\CUST_AZ12.csv'
+        WITH (FORMAT='CSV', FIRSTROW=2);
+
+        SET @step_end = SYSDATETIME();
+        PRINT 'Completed: bronze.erp_cust | Duration (sec): '
+              + CAST(DATEDIFF(SECOND, @step_start, @step_end) AS NVARCHAR);
+
+        --------------------------------------------------
+        -- ERP: Location
+        --------------------------------------------------
+        SET @step_start = SYSDATETIME();
+        PRINT 'Loading: bronze.erp_location';
+
+        TRUNCATE TABLE bronze.erp_location;
+        BULK INSERT bronze.erp_location
+        FROM 'C:\DW\LOC_A101.csv'
+        WITH (FORMAT='CSV', FIRSTROW=2);
+
+        SET @step_end = SYSDATETIME();
+        PRINT 'Completed: bronze.erp_location | Duration (sec): '
+              + CAST(DATEDIFF(SECOND, @step_start, @step_end) AS NVARCHAR);
+
+        --------------------------------------------------
+        -- ERP: Category
+        --------------------------------------------------
+        SET @step_start = SYSDATETIME();
+        PRINT 'Loading: bronze.erp_category';
+
+        TRUNCATE TABLE bronze.erp_category;
+        BULK INSERT bronze.erp_category
+        FROM 'C:\DW\PX_CAT_G1V2.csv'
+        WITH (FORMAT='CSV', FIRSTROW=2);
+
+        SET @step_end = SYSDATETIME();
+        PRINT 'Completed: bronze.erp_category | Duration (sec): '
+              + CAST(DATEDIFF(SECOND, @step_start, @step_end) AS NVARCHAR);
+
+    END TRY
+    BEGIN CATCH
+        PRINT 'ERROR: ' + ERROR_MESSAGE();
+    END CATCH;
+
+    DECLARE @batch_end DATETIME2 = SYSDATETIME();
+
+    PRINT 'Batch End Time: ' + CAST(@batch_end AS NVARCHAR);
+    PRINT 'Total Duration (sec): '
+          + CAST(DATEDIFF(SECOND, @batch_start, @batch_end) AS NVARCHAR);
+    PRINT '===== BRONZE LOAD FINISHED =====';
+END;
+GO
