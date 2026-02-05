@@ -29,6 +29,7 @@ It covers requirement analysis, architecture design, ETL pipeline creation, data
 | **Silver** | Cleaned & standardized | Tables | Data cleansing, normalization, derived columns |
 | **Gold** | Business ready | Views | Star schema, aggregations, business logic |
 
+<img src="docs/images/data-architecture.png" width="900"/>
 ---
 
 ## Bronze Layer — Raw Data
@@ -52,6 +53,12 @@ It covers requirement analysis, architecture design, ETL pipeline creation, data
 - Sales and price correction rules
 
 ---
+## Gold Layer — Analytical Model
+
+-Surrogate keys using ROW_NUMBER()
+-Customer and product dimensions enriched with ERP data
+-Sales fact linked via surrogate keys
+-Optimized for reporting and BI tools
 
 ## Data Flow
 
@@ -60,13 +67,14 @@ Data moves from:
 ```
 CRM & ERP CSV Sources → Bronze Tables → Silver Transformations → Gold Analytical Model
 ```
-
+<img src="docs/images/data-flow.png" width="900"/>
 ---
 
 ## Integration Model (CRM + ERP)
 
 Customer, product, and category data from different systems are integrated and standardized before dimensional modeling.
 
+<img src="docs/images/integration-model.png" width="900"/>
 ---
 
 ## Star Schema Model (Gold Layer)
@@ -77,6 +85,7 @@ Customer, product, and category data from different systems are integrated and s
 
 Designed for BI tools and analytical querying.
 
+<img src="docs/images/star-schema.png" width="900"/>
 ---
 
 ## Key Stored Procedures
@@ -112,13 +121,10 @@ Designed for BI tools and analytical querying.
 
 ## Why This Project Matters
 
-This project goes beyond writing SQL queries. It demonstrates **real Data Engineering thinking**:
-
-> Architecture → Ingestion → Transformation → Modeling → Documentation
-
+This project demonstrates the ability to design and implement a complete Data Warehouse solution end-to-end — from raw data ingestion to analytics-ready dimensional models — following real industry data engineering practices rather than isolated SQL scripting.
 ---
 
-## Author
+## 👤 Designed & Implemented By
 
 **Prasanth**  
-Data Analyst
+Data Analyst | Data Warehousing | ETL Developer
