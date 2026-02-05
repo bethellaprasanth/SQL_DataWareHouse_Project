@@ -1,0 +1,88 @@
+--- This script shows created Views and the logics behind it and provide info about dimensional tables and fact tables-----
+/*
+SCHEMA - STAR SCHEMA
+Dimension Tables - gold.dim_customers
+                   gold.dim_products
+Fact Tables -gold.fact_sales
+*/
+
+PRINT '------------Creating Views--------------------'
+
+PRINT '-----View Name: gold.dim_customers------------'
+
+CREATE VIEW gold.dim_customers as
+SELECT 
+	ROW_NUMBER() OVER(ORDER BY ci.cst_id) as customer_key,
+	ci.cst_id AS Customer_ID,
+	ci.cst_key as Customer_Num,
+	ci.cst_firstname as First_Name,
+	ci.cst_lastname as Last_Name,
+	cl.cntry as Country,
+	ci.cst_marital_status as Marital_Status,
+	CASE ---Formatting Gender Column----
+		WHEN cst_gndr != 'n/a' THEN cst_gndr
+		else coalesce(cst_gndr,'n/a')
+	END AS Gender,
+	ce.bdate as BirthDate,
+	cst_create_date as Creation_date
+FROM silver.crm_cust_info ci
+LEFT JOIN
+silver.erp_cust ce
+on ci.cst_key = ce.cid
+LEFT JOIN 
+silver.erp_location cl
+on ci.cst_key = cl.cid
+WHERE ci.cst_id is not null
+
+------------------------------------------
+
+
+
+PRINT '-----View Name: gold.dim_products------------'
+
+CREATE VIEW gold.dim_products as 
+SELECT
+	ROW_NUMBER() OVER(order by ipr.prd_start_dt,ipr.prd_id) as Product_key,
+	ipr.prd_id AS Product_ID,
+	ipr.prd_key as Prodcut_Number,
+	ipr.prd_nm Product_Name,
+	ipr.cat_id AS Category_ID,
+	ec.cat as Category,
+	ec.subcat as Sub_Category,
+	ec.maintenance as Maintenance,
+	ipr.prd_cost as Cost,
+	ipr.prd_line as Line,
+	ipr.prd_start_dt as Start_dt
+	
+FROM silver.crm_prd_info ipr
+LEFT JOIN
+silver.erp_category ec
+on ipr.cat_id = ec.id
+where ipr.prd_end_dt is null;--filter all historical data
+
+
+
+----------------------------------------------------------
+
+
+PRINT '-----View Name: gold.fact_sales------------'
+
+CREATE VIEW gold.fact_sales as
+select 
+	sd.sls_ord_num AS Order_Num,
+	pr.Product_key,
+	cs.customer_key,
+	sd.sls_quantity as Qunatity,
+	sd.sls_price as Price,
+	sd.sls_sales as Sales,
+	sd.sls_order_dt AS Order_dt,
+	sd.sls_ship_dt as Ship_Dt,
+	sd.sls_due_dt as Due_dt
+from silver.crm_sales_details sd
+LEFT JOIN
+gold.dim_products pr
+on sd.sls_prd_key = pr.Prodcut_Number
+left join
+gold.dim_customers cs
+on sd.sls_cust_id = cs.Customer_ID
+
